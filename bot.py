@@ -35,6 +35,7 @@ async def on_ready():
     global db # ganti jadi object sendiri, jangan pake global
     db = await asyncpg.create_pool(**credentials)
     await db.execute("CREATE TABLE IF NOT EXISTS dead(id SERIAL PRIMARY KEY, player varchar(50), days int, reason varchar(50), time date NOT NULL);")
+    await db.execute("SET timezone TO 'Asia/Jakarta';")
     await db.execute("ALTER TABLE dead ADD COLUMN IF NOT EXISTS time date;")
     print(f'{bot.user.name} has connected to discord')
     await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name="Someone Dying"))
@@ -58,7 +59,7 @@ async def on_message(message):
 
 @bot.command(name='mc-death', help='mc-death [player] [day_count] [reason] [yyyy-mm-dd (default current date)]')
 async def mc_death(ctx, *message):
-    time = message[3] if len(message) == 4 else "current_timestamp AT TIME ZONE 'Asia/Jakarta'"
+    time = message[3] if len(message) == 4 != None else "NOW()"
     connection = await db.acquire()
     async with connection.transaction():
         query = f'INSERT INTO dead(player, days, reason, time) VALUES($1, $2, $3, $4);'
