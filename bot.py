@@ -25,11 +25,10 @@ db = None
 
 @bot.event
 async def on_ready():
-    credentials = {"user": f"{POSTGRES_USER}", 
-                    "password": f"{POSTGRES_PASSWORD}", 
-                    "database": f"{POSTGRES_DATABASE}", 
-                    "host": f"{POSTGRES_HOST}"}
-
+    credentials = {"user": POSTGRES_USER, 
+                    "password": POSTGRES_PASSWORD, 
+                    "database": POSTGRES_DATABASE, 
+                    "host": POSTGRES_HOST}
     global db # ganti jadi object sendiri, jangan pake global
     db = await asyncpg.create_pool(**credentials)
     await db.execute("CREATE TABLE IF NOT EXISTS dead(id SERIAL PRIMARY KEY, player varchar(50), days int, reason varchar(50), time date NOT NULL);")
@@ -42,7 +41,7 @@ async def on_ready():
 async def on_command_error(ctx, error):
     with open('err.log', 'a') as f:
         f.write(f'Unhandled Exception: {error}\n')
-    await ctx.send('Error occured. Contact administrator.')
+    await ctx.send('vicky')
 
 
 @bot.event
