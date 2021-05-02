@@ -6,6 +6,7 @@ import asyncpg
 
 from dotenv import load_dotenv
 from discord.ext import commands
+from flask import Flask
 
 load_dotenv()
 #Bot Credential
@@ -17,6 +18,8 @@ POSTGRES_USER = os.getenv('POSTGRES_USER')
 POSTGRES_PASSWORD = os.getenv('POSTGRES_PASSWORD')
 POSTGRES_DATABASE = os.getenv('POSTGRES_DATABASE')
 POSTGRES_HOST = os.getenv('POSTGRES_HOST')
+
+
 
 bot = commands.Bot(command_prefix='!')
 
@@ -71,12 +74,12 @@ async def mc_history(ctx, *message):
     query = "SELECT * FROM dead;"
     rows = await db.fetch(query) # return list of all row
     message = """
-+-------------------+-------------------+-------------------+-------------------+
-|       Player      |        Days       |       Reason      |       TIME        |
-+-------------------+-------------------+-------------------+-------------------+\n"""
++--------------+--------------+--------------+--------------+
+|    Player    |     Days     |    Reason    |    TIME      |
++--------------+--------------+--------------+--------------+\n"""
     for row in rows:
-        message += f'|{row[1].center(19)}|{(str(row[2])).center(19)}|{row[3].center(19)}|{row[4].center(19)}|\n'
-    message += '+-------------------+-------------------+-------------------+\n'
+        message += f'|{row[1].center(14)}|{(str(row[2])).center(14)}|{row[3].center(14)}|{row[4].center(14)}|\n'
+    message += '+--------------+--------------+--------------+--------------+\n'
     embed_message.add_field(name="History", value=f"```{message}```", inline=True)
     await ctx.send(embed=embed_message)
 
@@ -116,3 +119,11 @@ async def mc_stats(ctx, *message):
     await ctx.send(embed=embed_message)
 
 bot.run(TOKEN)  #connect ke bot nya
+
+
+# Flask zone, for domainesia
+app = Flask(__name__)
+
+@app.route('/')
+def hello():
+    return "Nothing here"
