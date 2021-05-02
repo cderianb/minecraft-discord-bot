@@ -79,7 +79,7 @@ async def mc_history(ctx, *message):
 |    Player    |     Days     |    Reason    |    TIME      |
 +--------------+--------------+--------------+--------------+\n"""
     for row in rows:
-        message += f'|{row[1].center(14)}|{(str(row[2])).center(14)}|{row[3].center(14)}|{row[4].center(14)}|\n'
+        message += f'|{row[1].center(14)}|{(str(row[2])).center(14)}|{row[3].center(14)}|{str(row[4]).center(14)}|\n'
     message += '+--------------+--------------+--------------+--------------+\n'
     embed_message.add_field(name="History", value=f"```{message}```", inline=True)
     await ctx.send(embed=embed_message)
