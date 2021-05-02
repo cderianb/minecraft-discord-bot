@@ -25,13 +25,13 @@ db = None
 
 @bot.event
 async def on_ready():
-    credentials = {"user": f"{POSTGRES_USER}", 
-                    "password": f"{POSTGRES_PASSWORD}", 
-                    "database": f"{POSTGRES_DATABASE}", 
-                    "host": f"{POSTGRES_HOST}"}
-
+    credentials = {"user": POSTGRES_USER, 
+                    "password": POSTGRES_PASSWORD, 
+                    "database": POSTGRES_DATABASE, 
+                    "host": POSTGRES_HOST}
     global db # ganti jadi object sendiri, jangan pake global
     db = await asyncpg.create_pool(**credentials)
+
     await db.execute("CREATE TABLE IF NOT EXISTS dead(id SERIAL PRIMARY KEY, player varchar(50), days int, reason varchar(50));")
     print(f'{bot.user.name} has connected to discord')
 
