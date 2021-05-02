@@ -32,8 +32,10 @@ async def on_ready():
 
     global db # ganti jadi object sendiri, jangan pake global
     db = await asyncpg.create_pool(**credentials)
-    await db.execute("CREATE TABLE IF NOT EXISTS dead(id SERIAL PRIMARY KEY, player varchar(50), days int, reason varchar(50));")
+    await db.execute("CREATE TABLE IF NOT EXISTS dead(id SERIAL PRIMARY KEY, player varchar(50), days int, reason varchar(50), time date NOT NULL);")
+    await db.execute("ALTER TABLE dead ADD COLUMN IF NOT EXISTS time date;")
     print(f'{bot.user.name} has connected to discord')
+    await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name="Someone Dying"))
 
 
 @bot.event
@@ -53,13 +55,13 @@ async def on_message(message):
         await bot.process_commands(message)  # kalo dapet command (awalan !)
         return 
 
-@bot.command(name='mc-death', help='mc-death [player] [day_count] [reason]')
+@bot.command(name='mc-death', help='mc-death [player] [day_count] [reason] [yyyy-mm-dd (default current date)]')
 async def mc_death(ctx, *message):
-    
+    time = message[3] if len(message) == 4 != None else "current_timestamp AT TIME ZONE 'Asia/Jakarta'"
     connection = await db.acquire()
     async with connection.transaction():
-        query = f'INSERT INTO dead(player, days, reason) VALUES($1, $2, $3);'
-        await db.execute(query, message[0], int(message[1]), message[2])
+        query = f'INSERT INTO dead(player, days, reason, time) VALUES($1, $2, $3, $4);'
+        await db.execute(query, message[0], int(message[1]), message[2], time)
     await db.release(connection)
 
     await ctx.send('Stats Updated')
@@ -71,11 +73,30 @@ async def mc_history(ctx, *message):
     query = "SELECT * FROM dead;"
     rows = await db.fetch(query) # return list of all row
     message = """
++-------------------+-------------------+-------------------+-------------------+
+|       Player      |        Days       |       Reason      |       TIME        |
++-------------------+-------------------+-------------------+-------------------+\n"""
+    for row in rows:
+        message += f'|{row[1].center(19)}|{(str(row[2])).center(19)}|{row[3].center(19)}|{row[4].center(19)}|\n'
+    message += '+-------------------+-------------------+-------------------+\n'
+    embed_message.add_field(name="History", value=f"```{message}```", inline=True)
+    await ctx.send(embed=embed_message)
+
+@bot.command(name='mc-history-user', help='mc-history-user [player]')
+async def mc_history(ctx, *message):
+    if message[0] == None:
+        return
+    player_name = message[0]
+    embed_message = discord.Embed(title=f'{player_name}\'s Death History', description="Death History per Player", color=0x00ff00)
+
+    query = f'SELECT day, reason, time FROM dead WHERE player = {player_name};'
+    rows = await db.fetch(query) # return list of all row
+    message = """
 +-------------------+-------------------+-------------------+
-|       Player      |        Days       |       Reason      |
+|        Days       |       Reason      |       TIME        |
 +-------------------+-------------------+-------------------+\n"""
     for row in rows:
-        message += f'|{row[1].center(19)}|{(str(row[2])).center(19)}|{row[3].center(19)}|\n'
+        message += f'|{row[0].center(19)}|{(str(row[1])).center(19)}|{row[2].center(19)}|\n'
     message += '+-------------------+-------------------+-------------------+\n'
     embed_message.add_field(name="History", value=f"```{message}```", inline=True)
     await ctx.send(embed=embed_message)
