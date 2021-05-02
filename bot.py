@@ -59,11 +59,11 @@ async def on_message(message):
 
 @bot.command(name='mc-death', help='mc-death [player] [day_count] [reason] [yyyy-mm-dd (default current date)]')
 async def mc_death(ctx, *message):
-    time = message[3] if len(message) == 4 else "NOW()"
+    time = f"'{message[3]}'" if len(message) == 4 else "NOW()"
     connection = await db.acquire()
     async with connection.transaction():
-        query = f'INSERT INTO dead(player, days, reason, time) VALUES($1, $2, $3, $4);'
-        await db.execute(query, message[0], int(message[1]), message[2], time)
+        query = f'INSERT INTO dead(player, days, reason, time) VALUES($1, $2, $3, {time});'
+        await db.execute(query, message[0], int(message[1]), message[2])
     await db.release(connection)
 
     await ctx.send('Stats Updated')
@@ -91,14 +91,14 @@ async def mc_history(ctx, *message):
     player_name = message[0]
     embed_message = discord.Embed(title=f'{player_name}\'s Death History', description="Death History per Player", color=0x00ff00)
 
-    query = f'SELECT day, reason, time FROM dead WHERE player = {player_name};'
+    query = f"SELECT days, reason, time FROM dead WHERE player = '{player_name}';"
     rows = await db.fetch(query) # return list of all row
     message = """
 +-------------------+-------------------+-------------------+
 |        Days       |       Reason      |       TIME        |
 +-------------------+-------------------+-------------------+\n"""
     for row in rows:
-        message += f'|{row[0].center(19)}|{(str(row[1])).center(19)}|{row[2].center(19)}|\n'
+        message += f'|{(str(row[0])).center(19)}|{(row[1]).center(19)}|{(str(row[2])).center(19)}|\n'
     message += '+-------------------+-------------------+-------------------+\n'
     embed_message.add_field(name="History", value=f"```{message}```", inline=True)
     await ctx.send(embed=embed_message)
