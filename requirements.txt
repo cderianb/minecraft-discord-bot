@@ -1,2 +1,4 @@
 discord
 asyncpg
+flask
+python-dotenv

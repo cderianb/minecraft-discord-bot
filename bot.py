@@ -6,6 +6,7 @@ import asyncpg
 
 from dotenv import load_dotenv
 from discord.ext import commands
+from flask import Flask
 
 load_dotenv()
 #Bot Credential
@@ -17,6 +18,8 @@ POSTGRES_USER = os.getenv('POSTGRES_USER')
 POSTGRES_PASSWORD = os.getenv('POSTGRES_PASSWORD')
 POSTGRES_DATABASE = os.getenv('POSTGRES_DATABASE')
 POSTGRES_HOST = os.getenv('POSTGRES_HOST')
+
+
 
 bot = commands.Bot(command_prefix='!')
 
@@ -32,6 +35,7 @@ async def on_ready():
     global db # ganti jadi object sendiri, jangan pake global
     db = await asyncpg.create_pool(**credentials)
     await db.execute("CREATE TABLE IF NOT EXISTS dead(id SERIAL PRIMARY KEY, player varchar(50), days int, reason varchar(50), time date NOT NULL);")
+    await db.execute("SET timezone TO 'Asia/Jakarta';")
     await db.execute("ALTER TABLE dead ADD COLUMN IF NOT EXISTS time date;")
     print(f'{bot.user.name} has connected to discord')
     await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name="Someone Dying"))
@@ -55,7 +59,7 @@ async def on_message(message):
 
 @bot.command(name='mc-death', help='mc-death [player] [day_count] [reason] [yyyy-mm-dd (default current date)]')
 async def mc_death(ctx, *message):
-    time = message[3] if len(message) == 4 else "current_timestamp AT TIME ZONE 'Asia/Jakarta'"
+    time = message[3] if len(message) == 4 else "NOW()"
     connection = await db.acquire()
     async with connection.transaction():
         query = f'INSERT INTO dead(player, days, reason, time) VALUES($1, $2, $3, $4);'
@@ -71,12 +75,12 @@ async def mc_history(ctx, *message):
     query = "SELECT * FROM dead;"
     rows = await db.fetch(query) # return list of all row
     message = """
-+-------------------+-------------------+-------------------+-------------------+
-|       Player      |        Days       |       Reason      |       TIME        |
-+-------------------+-------------------+-------------------+-------------------+\n"""
++--------------+--------------+--------------+--------------+
+|    Player    |     Days     |    Reason    |    TIME      |
++--------------+--------------+--------------+--------------+\n"""
     for row in rows:
-        message += f'|{row[1].center(19)}|{(str(row[2])).center(19)}|{row[3].center(19)}|{row[4].center(19)}|\n'
-    message += '+-------------------+-------------------+-------------------+\n'
+        message += f'|{row[1].center(14)}|{(str(row[2])).center(14)}|{row[3].center(14)}|{row[4].center(14)}|\n'
+    message += '+--------------+--------------+--------------+--------------+\n'
     embed_message.add_field(name="History", value=f"```{message}```", inline=True)
     await ctx.send(embed=embed_message)
 
@@ -116,3 +120,11 @@ async def mc_stats(ctx, *message):
     await ctx.send(embed=embed_message)
 
 bot.run(TOKEN)  #connect ke bot nya
+
+
+# Flask zone, for domainesia
+app = Flask(__name__)
+
+@app.route('/')
+def hello():
+    return "Nothing here"
