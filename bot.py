@@ -40,7 +40,7 @@ async def on_ready():
 async def on_command_error(ctx, error):
     with open('err.log', 'a') as f:
         f.write(f'Unhandled Exception: {error}\n')
-    await ctx.send('Error occured. Contact administrator.')
+    await ctx.send('vicky')
 
 
 @bot.event
