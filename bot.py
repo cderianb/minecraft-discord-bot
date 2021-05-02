@@ -41,12 +41,11 @@ async def on_ready():
 async def on_command_error(ctx, error):
     with open('err.log', 'a') as f:
         f.write(f'Unhandled Exception: {error}\n')
-    await ctx.send('vicky')
+    await ctx.send('Ooops something happened! Please contact your admin :(')
 
 
 @bot.event
 async def on_message(message):
-
     if message.author == bot.user:
         return  # kalo dapet message dari bot diri sendiri abaikan
 
