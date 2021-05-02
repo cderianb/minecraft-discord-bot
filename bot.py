@@ -59,7 +59,7 @@ async def on_message(message):
 
 @bot.command(name='mc-death', help='mc-death [player] [day_count] [reason] [yyyy-mm-dd (default current date)]')
 async def mc_death(ctx, *message):
-    time = message[3] if len(message) == 4 != None else "NOW()"
+    time = message[3] if len(message) == 4 else "NOW()"
     connection = await db.acquire()
     async with connection.transaction():
         query = f'INSERT INTO dead(player, days, reason, time) VALUES($1, $2, $3, $4);'
