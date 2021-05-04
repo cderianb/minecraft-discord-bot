@@ -3,9 +3,10 @@ import os
 import random
 import discord
 import asyncpg
+import multiprocessing
+import time
 
 from dotenv import load_dotenv
 from discord.ext import commands
-from flask import Flask
 
 from constant import *
