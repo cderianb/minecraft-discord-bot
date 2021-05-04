@@ -68,11 +68,11 @@ async def mc_death(ctx, *message):
 
     await ctx.send('Stats Updated')
 
-@bot.command(name='mc-history', help='see current death stats')
+@bot.command(name='mc-history', help='see current death stats (last 10 death)')
 async def mc_history(ctx, *message):
     embed_message = discord.Embed(title="Minecraft Hardcore Death History", description="Death History", color=0x00ff00)
 
-    query = "SELECT * FROM dead;"
+    query = "SELECT * FROM dead ORDER BY id DESC LIMIT 10;"
     rows = await db.fetch(query) # return list of all row
     message = """
 +--------------+--------------+--------------+--------------+
@@ -91,7 +91,7 @@ async def mc_history(ctx, *message):
     player_name = message[0]
     embed_message = discord.Embed(title=f'{player_name}\'s Death History', description="Death History per Player", color=0x00ff00)
 
-    query = f"SELECT days, reason, time FROM dead WHERE player = '{player_name}';"
+    query = f"SELECT days, reason, time FROM dead WHERE player = '{player_name}' ORDER BY id DESC LIMIT 10;"
     rows = await db.fetch(query) # return list of all row
     message = """
 +-------------------+-------------------+-------------------+
@@ -107,7 +107,7 @@ async def mc_history(ctx, *message):
 async def mc_stats(ctx, *message):
     embed_message = discord.Embed(title="Minecraft Hardcore Dead Stats", description="Death Counter", color=0x00ff00)
     
-    query = "select player, count(*) from dead group by player ORDER BY 2 DESC, 1;"
+    query = "select player, count(*) from dead group by player ORDER BY 2 DESC, 1 LIMIT 10;"
     rows = await db.fetch(query)
     message = """
 +--------------------+--------------------+
