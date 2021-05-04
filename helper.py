@@ -1,7 +1,7 @@
 from imports import *
 
 # rows : data shown in table
-def get_embed_death_history(db, rows:list, page:int = 1):
+def get_embed_death_history(rows:list, page:int = 1):
     embed_message = discord.Embed(title=DEATH_HISTORY_TITLE, 
                                     description="Death history sorted from latest death", 
                                     color=0x00ff00)

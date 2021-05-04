@@ -92,7 +92,7 @@ async def mc_history(ctx, *message):
     try:
         query = "SELECT * FROM dead ORDER BY id DESC LIMIT 10;"
         rows = await db.fetch(query)
-        embed_message = get_embed_death_history(db, rows)
+        embed_message = get_embed_death_history(rows)
 
         res = await ctx.send(embed=embed_message)
         
