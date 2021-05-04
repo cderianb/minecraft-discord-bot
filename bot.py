@@ -33,7 +33,7 @@ async def on_ready():
 
     print(f'{bot.user.name} has connected to discord')
 
-    await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name="asljdhkasdj"))
+    await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name="Someone Dying"))
 
 @bot.event
 async def on_command_error(ctx, error):
