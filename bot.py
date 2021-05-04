@@ -2,9 +2,6 @@ from imports import *
 from helper import *
 
 load_dotenv()
-#Bot Credential
-TOKEN = os.getenv('DISCORD_TOKEN') 
-
 #Database Credential
 POSTGRES_USER = os.getenv('POSTGRES_USER')
 POSTGRES_PASSWORD = os.getenv('POSTGRES_PASSWORD')
@@ -14,7 +11,7 @@ POSTGRES_HOST = os.getenv('POSTGRES_HOST')
 
 #TIMER
 start_time = time.time()
-exit_after = 24 * 60 * 60 # 24 hours in second
+exit_after = (24 * 60 * 60) - 60 # 24 hours in second
 
 bot = commands.Bot(command_prefix='!')
 
@@ -144,16 +141,18 @@ async def mc_stats(ctx, *message):
 def connectBot(TOKEN_DISCORD):
     bot.run(TOKEN_DISCORD)
 
-#Run bot with async
-p = multiprocessing.Process(target=connectBot, name="connectBot", args=(TOKEN))
-p.start()
+if __name__ == '__main__':
+    #Bot Credential
+    TOKEN = os.getenv('DISCORD_TOKEN') 
+    p = multiprocessing.Process(target=connectBot, name="connectBot", args=(TOKEN,))
+    p.start()
 
-#Timer
-while(time.time() - start_time <= exit_after):
-    time.sleep(60) #sleep every 1min
+    #Timer
+    while(time.time() - start_time <= exit_after):
+        time.sleep(10 * 60) #sleep every 10 mins
 
-#Exit program after timer end
-p.terminate()
-p.join()
-sys.exit()
+    #Exit program after timer end
+    p.terminate()
+    p.join()
+    sys.exit()
 
