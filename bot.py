@@ -60,7 +60,7 @@ async def on_reaction_add(reaction, user):
         # kasih validasi kalo yang boleh next cuma yang nge request
         page = int(reaction.message.embeds[0].footer.text)
         offset = 0
-        limit = 5
+        limit = 10
         if(reaction.emoji == '➡️'):
             offset = page * limit
             page+=1
@@ -69,7 +69,7 @@ async def on_reaction_add(reaction, user):
             page-=1
             offset = (page-1) * limit
 
-        query = f"SELECT * FROM dead LIMIT {limit} OFFSET {offset} ORDER BY 5 DESC;"
+        query = f"SELECT * FROM dead ORDER BY id DESC LIMIT {limit} OFFSET {offset};"
         rows = await db.fetch(query)
         if len(rows) > 0:
             embed_message = get_embed_death_history(rows, page)
@@ -90,27 +90,10 @@ async def mc_death(ctx, *message):
 @bot.command(name='mc-history', help='see current death stats (last 10 death)')
 async def mc_history(ctx, *message):
     try:
-<<<<<<< HEAD
         query = "SELECT * FROM dead ORDER BY id DESC LIMIT 10;"
-=======
-        query = "SELECT * FROM dead LIMIT 5 ORDER BY 5 DESC;"
->>>>>>> cfb9c56 (add order by date)
         rows = await db.fetch(query)
         embed_message = get_embed_death_history(db, rows)
 
-<<<<<<< HEAD
-    query = "SELECT * FROM dead ORDER BY id DESC LIMIT 10;"
-    rows = await db.fetch(query) # return list of all row
-    message = """
-+--------------+--------------+--------------+--------------+
-|    Player    |     Days     |    Reason    |    TIME      |
-+--------------+--------------+--------------+--------------+\n"""
-    for row in rows:
-        message += f'|{row[1].center(14)}|{(str(row[2])).center(14)}|{row[3].center(14)}|{str(row[4]).center(14)}|\n'
-    message += '+--------------+--------------+--------------+--------------+\n'
-    embed_message.add_field(name="History", value=f"```{message}```", inline=True)
-    await ctx.send(embed=embed_message)
-=======
         res = await ctx.send(embed=embed_message)
         
         await res.add_reaction('⬅️')
@@ -118,7 +101,6 @@ async def mc_history(ctx, *message):
 
     except Exception as e:
         print(e)
->>>>>>> 52ff272 (add pagination to death history)
 
 @bot.command(name='mc-history-user', help='mc-history-user [player]')
 async def mc_history(ctx, *message):
@@ -127,13 +109,8 @@ async def mc_history(ctx, *message):
     player_name = message[0]
     embed_message = discord.Embed(title=f'{player_name}\'s Death History', description="Death History per Player", color=0x00ff00)
 
-<<<<<<< HEAD
     query = f"SELECT days, reason, time FROM dead WHERE player = '{player_name}' ORDER BY id DESC LIMIT 10;"
     rows = await db.fetch(query) # return list of all row
-=======
-    query = f"SELECT days, reason, time FROM dead WHERE player = '{player_name}';"
-    rows = await db.fetch(query)
->>>>>>> 52ff272 (add pagination to death history)
     message = """
 +-------------------+-------------------+-------------------+
 |        Days       |       Reason      |       TIME        |
