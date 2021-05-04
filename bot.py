@@ -137,7 +137,7 @@ async def mc_stats(ctx, *message):
     embed_message.add_field(name="Stats", value=f"```{message}```", inline=True)
     await ctx.send(embed=embed_message)
 
-#Connect ke bot nya
+#Start bot
 def connectBot(TOKEN_DISCORD):
     bot.run(TOKEN_DISCORD)
 
