@@ -1,17 +1,9 @@
-# https://crt.sh/?id=2835394 -> SSL Certificate if needed
-import os
-import random
-import discord
-import asyncpg
-
-from dotenv import load_dotenv
-from discord.ext import commands
-from flask import Flask
+from imports import *
+from helper import *
 
 load_dotenv()
 #Bot Credential
-TOKEN = os.getenv('DISCORD_TOKEN')  #token untuk connect ke bot nya
-GUILD = os.getenv('DISCORD_GUILD')
+TOKEN = os.getenv('DISCORD_TOKEN') 
 
 #Database Credential
 POSTGRES_USER = os.getenv('POSTGRES_USER')
@@ -34,12 +26,14 @@ async def on_ready():
                     "host": POSTGRES_HOST}
     global db # ganti jadi object sendiri, jangan pake global
     db = await asyncpg.create_pool(**credentials)
+
     await db.execute("CREATE TABLE IF NOT EXISTS dead(id SERIAL PRIMARY KEY, player varchar(50), days int, reason varchar(50), time date NOT NULL);")
     await db.execute("SET timezone TO 'Asia/Jakarta';")
     await db.execute("ALTER TABLE dead ADD COLUMN IF NOT EXISTS time date;")
-    print(f'{bot.user.name} has connected to discord')
-    await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name="Someone Dying"))
 
+    print(f'{bot.user.name} has connected to discord')
+
+    await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name="Someone Dying"))
 
 @bot.event
 async def on_command_error(ctx, error):
@@ -51,11 +45,36 @@ async def on_command_error(ctx, error):
 @bot.event
 async def on_message(message):
     if message.author == bot.user:
-        return  # kalo dapet message dari bot diri sendiri abaikan
+        return
 
     if message.content.startswith('!'):
-        await bot.process_commands(message)  # kalo dapet command (awalan !)
+        await bot.process_commands(message)
         return 
+
+@bot.event
+async def on_reaction_add(reaction, user):
+    if user == bot.user:
+        return
+
+    if(reaction.message.embeds[0].title == DEATH_HISTORY_TITLE):
+        # kasih validasi kalo yang boleh next cuma yang nge request
+        page = int(reaction.message.embeds[0].footer.text)
+        offset = 0
+        limit = 10
+        if(reaction.emoji == '➡️'):
+            offset = page * limit
+            page+=1
+
+        elif(reaction.emoji == '⬅️' and page > 1 ):
+            page-=1
+            offset = (page-1) * limit
+
+        query = f"SELECT * FROM dead ORDER BY id DESC LIMIT {limit} OFFSET {offset};"
+        rows = await db.fetch(query)
+        if len(rows) > 0:
+            embed_message = get_embed_death_history(rows, page)
+            await reaction.message.edit(embed=embed_message)
+        return
 
 @bot.command(name='mc-death', help='mc-death [player] [day_count] [reason] [yyyy-mm-dd (default current date)]')
 async def mc_death(ctx, *message):
@@ -70,19 +89,18 @@ async def mc_death(ctx, *message):
 
 @bot.command(name='mc-history', help='see current death stats (last 10 death)')
 async def mc_history(ctx, *message):
-    embed_message = discord.Embed(title="Minecraft Hardcore Death History", description="Death History", color=0x00ff00)
+    try:
+        query = "SELECT * FROM dead ORDER BY id DESC LIMIT 10;"
+        rows = await db.fetch(query)
+        embed_message = get_embed_death_history(rows)
 
-    query = "SELECT * FROM dead ORDER BY id DESC LIMIT 10;"
-    rows = await db.fetch(query) # return list of all row
-    message = """
-+--------------+--------------+--------------+--------------+
-|    Player    |     Days     |    Reason    |    TIME      |
-+--------------+--------------+--------------+--------------+\n"""
-    for row in rows:
-        message += f'|{row[1].center(14)}|{(str(row[2])).center(14)}|{row[3].center(14)}|{str(row[4]).center(14)}|\n'
-    message += '+--------------+--------------+--------------+--------------+\n'
-    embed_message.add_field(name="History", value=f"```{message}```", inline=True)
-    await ctx.send(embed=embed_message)
+        res = await ctx.send(embed=embed_message)
+        
+        await res.add_reaction('⬅️')
+        await res.add_reaction('➡️')
+
+    except Exception as e:
+        print(e)
 
 @bot.command(name='mc-history-user', help='mc-history-user [player]')
 async def mc_history(ctx, *message):
@@ -120,7 +138,6 @@ async def mc_stats(ctx, *message):
     await ctx.send(embed=embed_message)
 
 bot.run(TOKEN)  #connect ke bot nya
-
 
 # Flask zone, for domainesia
 app = Flask(__name__)
