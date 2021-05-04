@@ -60,15 +60,16 @@ async def on_reaction_add(reaction, user):
         # kasih validasi kalo yang boleh next cuma yang nge request
         page = int(reaction.message.embeds[0].footer.text)
         offset = 0
+        limit = 5
         if(reaction.emoji == '➡️'):
-            offset = page * 2
+            offset = page * limit
             page+=1
 
         elif(reaction.emoji == '⬅️' and page > 1 ):
             page-=1
-            offset = (page-1) * 2
+            offset = (page-1) * limit
 
-        query = f"SELECT * FROM dead LIMIT 2 OFFSET {offset};"
+        query = f"SELECT * FROM dead LIMIT {limit} OFFSET {offset} ORDER BY 5 DESC;"
         rows = await db.fetch(query)
         if len(rows) > 0:
             embed_message = get_embed_death_history(rows, page)
@@ -89,7 +90,11 @@ async def mc_death(ctx, *message):
 @bot.command(name='mc-history', help='see current death stats (last 10 death)')
 async def mc_history(ctx, *message):
     try:
+<<<<<<< HEAD
         query = "SELECT * FROM dead ORDER BY id DESC LIMIT 10;"
+=======
+        query = "SELECT * FROM dead LIMIT 5 ORDER BY 5 DESC;"
+>>>>>>> cfb9c56 (add order by date)
         rows = await db.fetch(query)
         embed_message = get_embed_death_history(db, rows)
 
