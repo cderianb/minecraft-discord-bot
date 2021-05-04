@@ -2,9 +2,6 @@ from imports import *
 from helper import *
 
 load_dotenv()
-#Bot Credential
-TOKEN = os.getenv('DISCORD_TOKEN') 
-
 #Database Credential
 POSTGRES_USER = os.getenv('POSTGRES_USER')
 POSTGRES_PASSWORD = os.getenv('POSTGRES_PASSWORD')
@@ -12,10 +9,13 @@ POSTGRES_DATABASE = os.getenv('POSTGRES_DATABASE')
 POSTGRES_HOST = os.getenv('POSTGRES_HOST')
 
 
+#TIMER
+start_time = time.time()
+exit_after = (24 * 60 * 60) - 60 # 24 hours in second
 
 bot = commands.Bot(command_prefix='!')
 
-# Change to object Bot
+#Change to object Bot
 db = None
 
 @bot.event
@@ -137,11 +137,22 @@ async def mc_stats(ctx, *message):
     embed_message.add_field(name="Stats", value=f"```{message}```", inline=True)
     await ctx.send(embed=embed_message)
 
-bot.run(TOKEN)  #connect ke bot nya
+#Start bot
+def connectBot(TOKEN_DISCORD):
+    bot.run(TOKEN_DISCORD)
 
-# Flask zone, for domainesia
-app = Flask(__name__)
+if __name__ == '__main__':
+    #Bot Credential
+    TOKEN = os.getenv('DISCORD_TOKEN') 
+    p = multiprocessing.Process(target=connectBot, name="connectBot", args=(TOKEN,))
+    p.start()
 
-@app.route('/')
-def hello():
-    return "Nothing here"
+    #Timer
+    while(time.time() - start_time <= exit_after):
+        time.sleep(10 * 60) #sleep every 10 mins
+
+    #Exit program after timer end
+    p.terminate()
+    p.join()
+    sys.exit()
+
