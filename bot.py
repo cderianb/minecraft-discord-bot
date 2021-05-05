@@ -1,13 +1,9 @@
 from imports import *
 from helper import *
+from database.provider.PostgreSQL import postgre
+from database.migrations import migrate_db
 
 load_dotenv()
-#Database Credential
-POSTGRES_USER = os.getenv('POSTGRES_USER')
-POSTGRES_PASSWORD = os.getenv('POSTGRES_PASSWORD')
-POSTGRES_DATABASE = os.getenv('POSTGRES_DATABASE')
-POSTGRES_HOST = os.getenv('POSTGRES_HOST')
-
 
 #TIMER
 start_time = time.time()
@@ -15,21 +11,10 @@ exit_after = (24 * 60 * 60) - 60 # 24 hours in second
 
 bot = commands.Bot(command_prefix='!')
 
-#Change to object Bot
-db = None
-
 @bot.event
 async def on_ready():
-    credentials = {"user": POSTGRES_USER, 
-                    "password": POSTGRES_PASSWORD, 
-                    "database": POSTGRES_DATABASE, 
-                    "host": POSTGRES_HOST}
-    global db # ganti jadi object sendiri, jangan pake global
-    db = await asyncpg.create_pool(**credentials)
-
-    await db.execute("CREATE TABLE IF NOT EXISTS dead(id SERIAL PRIMARY KEY, player varchar(50), days int, reason varchar(50), time date NOT NULL);")
-    await db.execute("SET timezone TO 'Asia/Jakarta';")
-    await db.execute("ALTER TABLE dead ADD COLUMN IF NOT EXISTS time date;")
+    await postgre.connect()
+    await migrate_db()
 
     print(f'{bot.user.name} has connected to discord')
 
@@ -70,7 +55,7 @@ async def on_reaction_add(reaction, user):
             offset = (page-1) * limit
 
         query = f"SELECT * FROM dead ORDER BY id DESC LIMIT {limit} OFFSET {offset};"
-        rows = await db.fetch(query)
+        rows = await postgre.get().fetch(query)
         if len(rows) > 0:
             embed_message = get_embed_death_history(rows, page)
             await reaction.message.edit(embed=embed_message)
@@ -79,11 +64,11 @@ async def on_reaction_add(reaction, user):
 @bot.command(name='mc-death', help='mc-death [player] [day_count] [reason] [yyyy-mm-dd (default current date)]')
 async def mc_death(ctx, *message):
     time = f"'{message[3]}'" if len(message) == 4 else "NOW()"
-    connection = await db.acquire()
+    connection = await postgre.get().acquire()
     async with connection.transaction():
         query = f'INSERT INTO dead(player, days, reason, time) VALUES($1, $2, $3, {time});'
-        await db.execute(query, message[0], int(message[1]), message[2])
-    await db.release(connection)
+        await postgre.get().execute(query, message[0], int(message[1]), message[2])
+    await postgre.get().release(connection)
 
     await ctx.send('Stats Updated')
 
@@ -91,7 +76,7 @@ async def mc_death(ctx, *message):
 async def mc_history(ctx, *message):
     try:
         query = "SELECT * FROM dead ORDER BY id DESC LIMIT 10;"
-        rows = await db.fetch(query)
+        rows = await postgre.get().fetch(query)
         embed_message = get_embed_death_history(rows)
 
         res = await ctx.send(embed=embed_message)
@@ -110,7 +95,7 @@ async def mc_history(ctx, *message):
     embed_message = discord.Embed(title=f'{player_name}\'s Death History', description="Death History per Player", color=0x00ff00)
 
     query = f"SELECT days, reason, time FROM dead WHERE player = '{player_name}' ORDER BY id DESC LIMIT 10;"
-    rows = await db.fetch(query) # return list of all row
+    rows = await postgre.get().fetch(query) # return list of all row
     message = """
 +-------------------+-------------------+-------------------+
 |        Days       |       Reason      |       TIME        |
@@ -126,7 +111,7 @@ async def mc_stats(ctx, *message):
     embed_message = discord.Embed(title="Minecraft Hardcore Dead Stats", description="Death Counter", color=0x00ff00)
     
     query = "select player, count(*) from dead group by player ORDER BY 2 DESC, 1 LIMIT 10;"
-    rows = await db.fetch(query)
+    rows = await postgre.get().fetch(query)
     message = """
 +--------------------+--------------------+
 |       Player       |        Score       |
