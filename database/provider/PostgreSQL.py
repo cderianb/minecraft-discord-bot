@@ -14,7 +14,7 @@ class PostgreSQL:
         }
     
     async def connect(self):
-        self.db = await asyncpg.create_pool(self.__get_credentials())
+        self.db = await asyncpg.create_pool(**self.__get_credentials())
     
     async def disconnect(self):
         await self.db.close()
