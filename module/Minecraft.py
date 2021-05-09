@@ -43,7 +43,7 @@ class Minecraft(commands.Cog):
     @commands.command(name='mc-death', help='mc-death [player (use @)] [day_count] [reason] [yyyy-mm-dd (default current date)]')
     async def mc_death(self, ctx, user: discord.User, day: int, reason: str, _time: str= None):
         await update_player_death(str(user.id), day, reason, _time)
-        await ctx.send(f"<@{user.id}> Lol ⬆️⬆️" if user.id == '289434773972058113' else 'Stats Updated')
+        await ctx.send(f"<@{user.id}> Lol ⬆️⬆️" if user.id == 289434773972058113 else 'Stats Updated')
 
     @commands.command(name='mc-history', help='see current death stats (last 10 death)')
     async def mc_history(self, ctx):
