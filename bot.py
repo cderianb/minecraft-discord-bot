@@ -11,7 +11,8 @@ modules = [
 
 #TIMER
 start_time = time.time()
-exit_after = (24 * 60 * 60) - 60 # 24 hours in second
+buffer_time = 10 * 60 # 15 minutes
+exit_after = 24 * 60 * 60 # 24 hours in second
 
 bot = commands.Bot(command_prefix='!')
 
@@ -45,7 +46,7 @@ if __name__ == '__main__':
     p.start()
 
     #Timer
-    while(time.time() - start_time <= exit_after):
+    while(time.time() - start_time <= (exit_after - buffer_time)):
         time.sleep(10 * 60) #sleep every 10 mins
 
     #Exit program after timer end
