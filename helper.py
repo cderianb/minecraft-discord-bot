@@ -17,3 +17,7 @@ def get_embed_death_history(rows:list, page:int = 1):
     embed_message.add_field(name="History", value=f"```{message}```", inline=True)
     embed_message.set_footer(text=str(page))
     return embed_message
+
+async def add_pagination(ctx):
+    await ctx.add_reaction('⬅️')
+    await ctx.add_reaction('➡️')

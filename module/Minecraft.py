@@ -2,36 +2,33 @@ import discord
 
 from discord.ext import commands
 from database.provider.PostgreSQL import postgre
+from service.MinecraftService import *
+from helper import add_pagination
 
 class Minecraft(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.db = postgre.get()
         self.DEATH_HISTORY_TITLE = "Minecraft Hardcore Death History"
+
+    # TODO: delete after all name is migrated
+    @commands.command(name='mc-rename', help='mc-rename [current player name stored] [player\'s discord (use @)]')
+    async def mc_rename(self, ctx, name: str, user: discord.User):
+        await rename_player(name, str(user.id))
+        await ctx.send(f'{name} is now updated to <@{user.id}>')
         
     @commands.command(name='mc-death', help='mc-death [player (use @)] [day_count] [reason] [yyyy-mm-dd (default current date)]')
     async def mc_death(self, ctx, user: discord.User, day: int, reason: str, _time: str= None):
-        time = _time if _time != None else "NOW()"
-        connection = await self.db.acquire()
-        async with connection.transaction():
-            query = f'INSERT INTO dead(player, days, reason, time) VALUES($1, $2, $3, {time});'
-            await self.db.execute(query, str(user.id), day, reason)
-        await self.db.release(connection)
-
-        # TODO: insult more!!
+        await update_player_death(str(user.id), day, reason, _time)
         await ctx.send(f"<@{user.id}> Lol ⬆️⬆️" if user.id == '289434773972058113' else 'Stats Updated')
 
     @commands.command(name='mc-history', help='see current death stats (last 10 death)')
     async def mc_history(self, ctx):
         try:
-            query = "SELECT * FROM dead ORDER BY id DESC LIMIT 10;"
-            rows = await self.db.fetch(query)
+            rows = await get_all_player_dead_history(0)
             embed_message = await self.__get_embed_death_history(rows)
 
             res = await ctx.send(embed=embed_message)
-            
-            await res.add_reaction('⬅️')
-            await res.add_reaction('➡️')
+            add_pagination(res)
 
         except Exception as e:
             print(e)
@@ -41,8 +38,7 @@ class Minecraft(commands.Cog):
         player_name = await self.__get_name_by_id(user.id)
         embed_message = discord.Embed(title=f'{player_name}\'s Death History', description="Death History per Player", color=0x00ff00)
 
-        query = f"SELECT days, reason, time FROM dead WHERE player = '{user.id}' ORDER BY id DESC LIMIT 10;"
-        rows = await self.db.fetch(query) # return list of all row
+        rows = await get_player_dead_history(user.id, 0)
         message = """
 +-------------------+-------------------+-------------------+
 |        Days       |       Reason      |       TIME        |
@@ -57,8 +53,7 @@ class Minecraft(commands.Cog):
     async def mc_stats(self, ctx):
         embed_message = discord.Embed(title="Minecraft Hardcore Dead Stats", description="Death Counter", color=0x00ff00)
         
-        query = "select player, count(*) from dead group by player ORDER BY 2 DESC, 1 LIMIT 10;"
-        rows = await self.db.fetch(query)
+        rows = await get_death_stats()
         message = """
 +--------------------+--------------------+
 |       Player       |        Score       |

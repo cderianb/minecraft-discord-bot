@@ -34,16 +34,6 @@ async def on_ready():
 #         f.write(f'Unhandled Exception: {error}\n')
 #     await ctx.send('Ooops something happened! Please contact your admin :(')
 
-
-# @bot.event
-# async def on_message(message):
-#     if message.author == bot.user:
-#         return
-
-#     if message.content.startswith('!'):
-#         await bot.process_commands(message)
-#         return
-
 @bot.event
 async def on_reaction_add(reaction, user):
     if user == bot.user:
