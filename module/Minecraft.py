@@ -3,12 +3,36 @@ import discord
 from discord.ext import commands
 from database.provider.PostgreSQL import postgre
 from service.MinecraftService import *
-from helper import add_pagination
 
 class Minecraft(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.DEATH_HISTORY_TITLE = "Minecraft Hardcore Death History"
+    
+    @commands.Cog.listener()
+    async def on_reaction_add(self, reaction, user):
+        if user.bot:
+            return
+
+        embed = reaction.message.embeds[0]
+        if(embed.title == self.DEATH_HISTORY_TITLE):
+            # kasih validasi kalo yang boleh next cuma yang nge request
+            page = int(embed.footer.text)
+            offset = 0
+            limit = 10
+            if(reaction.emoji == '➡️'):
+                offset = page * limit
+                page+=1
+
+            elif(reaction.emoji == '⬅️' and page > 1 ):
+                page-=1
+                offset = (page-1) * limit
+
+            rows = await get_all_player_dead_history(offset, limit)
+            if len(rows) > 0:
+                embed_message = await self.__get_embed_death_history(rows, page)
+                await reaction.message.edit(embed=embed_message)
+            return
 
     # TODO: delete after all name is migrated
     @commands.command(name='mc-rename', help='mc-rename [current player name stored] [player\'s discord (use @)]')
@@ -28,7 +52,8 @@ class Minecraft(commands.Cog):
             embed_message = await self.__get_embed_death_history(rows)
 
             res = await ctx.send(embed=embed_message)
-            add_pagination(res)
+            await res.add_reaction('⬅️')
+            await res.add_reaction('➡️')
 
         except Exception as e:
             print(e)
