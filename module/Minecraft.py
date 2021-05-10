@@ -90,6 +90,21 @@ class Minecraft(commands.Cog):
         embed_message.add_field(name="Stats", value=f"```{message}```", inline=True)
         await ctx.send(embed=embed_message)
 
+    @commands.command(name="mc-server", help='Server Information')
+    async def mc_server(ctx, *message):
+        message = await ctx.send('Retrieving server info... Please wait...')
+        
+        mc_api = os.getenv('MINECRAFT_SERVER_STATS_API')
+        mc_server = os.getenv('MINECRAFT_ATERNOS_SERVER')
+        url = mc_api + mc_server
+        response = requests.get(url)
+        if response.status_code != 200:
+            await message.edit(content='Server is stopped')
+            return
+    
+        embed_message = get_embed_server_status(response.json())
+        await message.edit(content=None, embed=embed_message)
+
     async def __get_embed_death_history(self, rows:list, page:int = 1):
         embed_message = discord.Embed(
             title=self.DEATH_HISTORY_TITLE, 
@@ -113,6 +128,23 @@ class Minecraft(commands.Cog):
     async def __get_name_by_id(self, id):
         user = await self.bot.fetch_user(id)
         return user.name
+    
+    def get_embed_server_status(info):
+        embed_message = discord.Embed(title='Wolvmc Aternos Server', 
+                                        description=f"Server Status for {info['hostname']}", 
+                                        color=0x00ff00)
 
+        is_online = 'Online' if info['online'] else 'Offline'
+        embed_message.add_field(name='Status', value=f'{is_online}', inline=True)
+        if info['online']:
+            embed_message.add_field(name='State', value=f'{info["version"]}', inline=True)
+            embed_message.add_field(name='IP', value=f'{info["ip"]}:{info["port"]}', inline=False)
+
+            player_online = info['players']['online']
+            player_max = info['players']['max']
+            embed_message.add_field(name='Online Players', value=f'{player_online}/{player_max}', inline=False)
+        
+        return embed_message
+        
 def setup(bot):
     bot.add_cog(Minecraft(bot))
