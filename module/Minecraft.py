@@ -1,4 +1,6 @@
 import discord
+import requests
+import os
 
 from discord.ext import commands
 from database.provider.PostgreSQL import postgre
@@ -91,7 +93,7 @@ class Minecraft(commands.Cog):
         await ctx.send(embed=embed_message)
 
     @commands.command(name="mc-server", help='Server Information')
-    async def mc_server(ctx, *message):
+    async def mc_server(self, ctx, *message):
         message = await ctx.send('Retrieving server info... Please wait...')
         
         mc_api = os.getenv('MINECRAFT_SERVER_STATS_API')
@@ -102,7 +104,7 @@ class Minecraft(commands.Cog):
             await message.edit(content='Server is stopped')
             return
     
-        embed_message = get_embed_server_status(response.json())
+        embed_message = self.__get_embed_server_status(response.json())
         await message.edit(content=None, embed=embed_message)
 
     async def __get_embed_death_history(self, rows:list, page:int = 1):
@@ -129,7 +131,7 @@ class Minecraft(commands.Cog):
         user = await self.bot.fetch_user(id)
         return user.name
     
-    def get_embed_server_status(info):
+    def __get_embed_server_status(self, info):
         embed_message = discord.Embed(title='Wolvmc Aternos Server', 
                                         description=f"Server Status for {info['hostname']}", 
                                         color=0x00ff00)
