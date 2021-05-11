@@ -44,12 +44,6 @@ class Minecraft(commands.Cog):
                     embed_message = await self.__get_embed_saved_coordinates(rows, page)
                     await reaction.message.edit(embed=embed_message)
                 return
-    # TODO: delete after all name is migrated
-    @commands.command(name='mc-rename', help='mc-rename [current player name stored] [player\'s discord (use @)]')
-    async def mc_rename(self, ctx, name: str, user: discord.User):
-        await rename_player(name, str(user.id))
-        await ctx.send(f'{name} is now updated to <@{user.id}>')
-        
     @commands.command(name='mc-death', help='mc-death [player (use @)] [day_count] [reason] [yyyy-mm-dd (default current date)]')
     async def mc_death(self, ctx, user: discord.User, day: int, reason: str, _time: str= None):
         await update_player_death(str(user.id), day, reason, _time)
@@ -130,7 +124,7 @@ class Minecraft(commands.Cog):
             except Exception as e:
                 print(e)
 
-        await insert_landmark(' '.join(description), x, y, z
+        await insert_landmark(' '.join(description), x, y, z)
         await ctx.send(f'**💾 Coordinate for `{" ".join(description)}` at `x: {x} y: {y} z: {z}` is saved**')
 
     async def __get_embed_saved_coordinates(self, rows:list, page:int = 1):
