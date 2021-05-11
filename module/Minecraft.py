@@ -44,6 +44,7 @@ class Minecraft(commands.Cog):
                     embed_message = await self.__get_embed_saved_coordinates(rows, page)
                     await reaction.message.edit(embed=embed_message)
                 return
+
     @commands.command(name='mc-death', help='mc-death [player (use @)] [day_count] [reason] [yyyy-mm-dd (default current date)]')
     async def mc_death(self, ctx, user: discord.User, day: int, reason: str, _time: str= None):
         await update_player_death(str(user.id), day, reason, _time)
@@ -109,7 +110,7 @@ class Minecraft(commands.Cog):
         embed_message = self.__get_embed_server_status(response.json())
         await message.edit(content=None, embed=embed_message)
 
-    @commands.command(name='mc-coord', help='see/save coordinates [description] [x] [y] [z] ')
+    @commands.command(name='mc-coord', help='see/save coordinates [x] [y] [z] [description]')
     async def mc_coord(self, ctx, x:int = 300, y:int = 300, z:int = 300, *description:str):
         #coordinate minecraft mentok di 255
         if len(description) == 0 and x == 300 and y == 300 and z == 300:
