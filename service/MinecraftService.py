@@ -26,3 +26,20 @@ async def get_player_dead_history(id: int, offset: int, limit = 10):
 async def get_death_stats():
     query = "select player, count(*) from dead group by player ORDER BY 2 DESC, 1 LIMIT 10;"
     return await postgre.get().fetch(query)
+
+async def insert_landmark(x:int, y:int, z:int, description:str):
+    connection = await postgre.get().acquire()
+    async with connection.transaction():
+        query = f'INSERT INTO coordinates(x, y, z, description) VALUES($1, $2, $3, $4);'
+        await postgre.get().execute(query, x, y, z, description)
+    await postgre.get().release(connection)
+
+async def update_landmark():
+    return NotImplementedError()
+
+async def delete_landmark():
+    return NotImplementedError()
+
+async def get_all_coordinates(offset: int, limit: int = 10):
+    query = f"SELECT * FROM coordinates ORDER BY id DESC LIMIT {limit} OFFSET {offset};"
+    return await postgre.get().fetch(query)

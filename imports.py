@@ -6,6 +6,7 @@ import discord
 import asyncpg
 import multiprocessing
 import time
+import yagmail
 
 from dotenv import load_dotenv
 from discord.ext import commands

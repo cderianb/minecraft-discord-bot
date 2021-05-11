@@ -30,9 +30,23 @@ async def on_ready():
 
 @bot.event
 async def on_command_error(ctx, error):
+    err = f'[{time.asctime()}]\nUnhandled Exception: {error}\n'
+    
     with open('err.log', 'a') as f:
-        f.write(f'Unhandled Exception: {error}\n')
-    await ctx.send('Ooops something happened! Please contact your admin :(')
+        f.write(err)
+
+    await ctx.send('☹️ Ooops something happened! Please contact your admin')
+
+    #kirim email nya ga async, jadi agak nunggu gitu
+    #makanya buat skrg send email nya setelah nulis di err.log dan chat discord biar ga nunggu
+    email = os.getenv('KEHUJANAN_EMAIL')
+    password = os.getenv('KEHUJANAN_PASSWORD')
+    yag = yagmail.SMTP(email, password)
+    contents = [
+            err
+        ]
+    yag.send(email, 'Minecraft Error', contents) 
+    
 
 
 #Start bot
