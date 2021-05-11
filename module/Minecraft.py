@@ -10,18 +10,19 @@ class Minecraft(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.DEATH_HISTORY_TITLE = "Minecraft Hardcore Death History"
+        self.SAVED_COORDINATES_TITLE = "Minecraft Saved Coordinates"
     
     @commands.Cog.listener()
     async def on_reaction_add(self, reaction, user):
         if user.bot:
             return
 
-        embed = reaction.message.embeds[0]
-        if(embed.title == self.DEATH_HISTORY_TITLE):
-            # kasih validasi kalo yang boleh next cuma yang nge request
+        if len(reaction.message.embeds) > 0:
+            embed = reaction.message.embeds[0]
             page = int(embed.footer.text)
             offset = 0
             limit = 10
+            # kasih validasi kalo yang boleh next cuma yang nge request
             if(reaction.emoji == '➡️'):
                 offset = page * limit
                 page+=1
@@ -30,12 +31,19 @@ class Minecraft(commands.Cog):
                 page-=1
                 offset = (page-1) * limit
 
-            rows = await get_all_player_dead_history(offset, limit)
-            if len(rows) > 0:
-                embed_message = await self.__get_embed_death_history(rows, page)
-                await reaction.message.edit(embed=embed_message)
-            return
+            if(embed.title == self.DEATH_HISTORY_TITLE):
+                rows = await get_all_player_dead_history(offset, limit)
+                if len(rows) > 0:
+                    embed_message = await self.__get_embed_death_history(rows, page)
+                    await reaction.message.edit(embed=embed_message)
+                return
 
+            elif(embed.title == self.SAVED_COORDINATES_TITLE):
+                rows = await get_all_coordinates(offset, limit)
+                if len(rows) > 0:
+                    embed_message = await self.__get_embed_saved_coordinates(rows, page)
+                    await reaction.message.edit(embed=embed_message)
+                return
     # TODO: delete after all name is migrated
     @commands.command(name='mc-rename', help='mc-rename [current player name stored] [player\'s discord (use @)]')
     async def mc_rename(self, ctx, name: str, user: discord.User):
@@ -45,7 +53,7 @@ class Minecraft(commands.Cog):
     @commands.command(name='mc-death', help='mc-death [player (use @)] [day_count] [reason] [yyyy-mm-dd (default current date)]')
     async def mc_death(self, ctx, user: discord.User, day: int, reason: str, _time: str= None):
         await update_player_death(str(user.id), day, reason, _time)
-        await ctx.send(f"<@{user.id}> Lol ⬆️⬆️" if user.id == 289434773972058113 else 'Stats Updated')
+        await ctx.send(f"<@{user.id}> Lol ⬆️⬆️" if user.id == 289434773972058113 else f"**😈 and <@{user.id}> goes straight to the hell**")
 
     @commands.command(name='mc-history', help='see current death stats (last 10 death)')
     async def mc_history(self, ctx):
@@ -93,19 +101,55 @@ class Minecraft(commands.Cog):
         await ctx.send(embed=embed_message)
 
     @commands.command(name="mc-server", help='Server Information')
-    async def mc_server(self, ctx, *message):
-        message = await ctx.send('Retrieving server info... Please wait...')
+    async def mc_server(self, ctx):
+        message = await ctx.send('⏳ **Retrieving server info... Please wait...**')
         
         mc_api = os.getenv('MINECRAFT_SERVER_STATS_API')
         mc_server = os.getenv('MINECRAFT_ATERNOS_SERVER')
         url = mc_api + mc_server
         response = requests.get(url)
         if response.status_code != 200:
-            await message.edit(content='Server is stopped')
+            await message.edit(content='**🛑 Server is stopped**')
             return
     
         embed_message = self.__get_embed_server_status(response.json())
         await message.edit(content=None, embed=embed_message)
+
+    @commands.command(name='mc-coord', help='see/save coordinates [description] [x] [y] [z] ')
+    async def mc_coord(self, ctx, x:int = 300, y:int = 300, z:int = 300, *description:str):
+        #coordinate minecraft mentok di 255
+        if len(description) == 0 and x == 300 and y == 300 and z == 300:
+            try:
+                rows = await get_all_coordinates(0)
+                embed_message = await self.__get_embed_saved_coordinates(rows)
+
+                res = await ctx.send(embed=embed_message)
+                await res.add_reaction('⬅️')
+                await res.add_reaction('➡️')
+                return
+            except Exception as e:
+                print(e)
+
+        await insert_landmark(x, y, z, ' '.join(description))
+        await ctx.send(f'**💾 Coordinate for `{" ".join(description)}` at `x: {x} y: {y} z: {z}` is saved**')
+
+    async def __get_embed_saved_coordinates(self, rows:list, page:int = 1):
+        embed_message = discord.Embed(
+                title="Minecraft Saved Coordinates", 
+                description="Minecraft saved coordinates for landmarks and others", 
+                color=0x00ff00
+            )
+        message = """
++--------------------+-------+-------+-------+
+|     Description    |   X   |   Y   |   Z   |
++--------------------+-------+-------+-------+\n"""
+        for row in rows:
+            message += f'|{(str(row[4])).center(20)}|{(str(row[1])).center(7)}|{(str(row[2])).center(7)}|{str(row[3]).center(7)}|\n'
+        message += '+--------------------+-------+-------+-------+\n'
+
+        embed_message.add_field(name="Coordinates", value=f"```{message}```", inline=True)
+        embed_message.set_footer(text=str(page))
+        return embed_message
 
     async def __get_embed_death_history(self, rows:list, page:int = 1):
         embed_message = discord.Embed(
