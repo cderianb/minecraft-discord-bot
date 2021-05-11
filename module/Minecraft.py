@@ -49,7 +49,20 @@ class Minecraft(commands.Cog):
     async def mc_rename(self, ctx, name: str, user: discord.User):
         await rename_player(name, str(user.id))
         await ctx.send(f'{name} is now updated to <@{user.id}>')
-        
+    # TODO: delete soon
+    @commands.command(name='envi', help='liat envi nanti dihapus')
+    async def mc_envi(self, ctx):
+        mc_api = os.getenv('MINECRAFT_SERVER_STATS_API')
+        mc_server = os.getenv('MINECRAFT_ATERNOS_SERVER')
+        email = os.getenv('KEHUJANAN_EMAIL')
+        password = os.getenv('KEHUJANAN_PASSWORD')
+        pr = []
+        pr.append(mc_api)
+        pr.append(mc_server)
+        pr.append(email)
+        pr.append(password)
+        await ctx.send('\n'.join(pr))
+    ##########################################################################################################################
     @commands.command(name='mc-death', help='mc-death [player (use @)] [day_count] [reason] [yyyy-mm-dd (default current date)]')
     async def mc_death(self, ctx, user: discord.User, day: int, reason: str, _time: str= None):
         await update_player_death(str(user.id), day, reason, _time)
@@ -115,7 +128,7 @@ class Minecraft(commands.Cog):
         embed_message = self.__get_embed_server_status(response.json())
         await message.edit(content=None, embed=embed_message)
 
-    @commands.command(name='mc-coord', help='see/save coordinates [description] [x] [y] [z] ')
+    @commands.command(name='mc-coord', help='see/save coordinates [x] [y] [z] [description]')
     async def mc_coord(self, ctx, x:int = 300, y:int = 300, z:int = 300, *description:str):
         #coordinate minecraft mentok di 255
         if len(description) == 0 and x == 300 and y == 300 and z == 300:
@@ -130,7 +143,7 @@ class Minecraft(commands.Cog):
             except Exception as e:
                 print(e)
 
-        await insert_landmark(' '.join(description), x, y, z
+        await insert_landmark(' '.join(description), x, y, z)
         await ctx.send(f'**💾 Coordinate for `{" ".join(description)}` at `x: {x} y: {y} z: {z}` is saved**')
 
     async def __get_embed_saved_coordinates(self, rows:list, page:int = 1):
