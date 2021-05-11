@@ -130,7 +130,7 @@ class Minecraft(commands.Cog):
             except Exception as e:
                 print(e)
 
-        await insert_landmark(x, y, z, ' '.join(description))
+        await insert_landmark(' '.join(description), x, y, z
         await ctx.send(f'**💾 Coordinate for `{" ".join(description)}` at `x: {x} y: {y} z: {z}` is saved**')
 
     async def __get_embed_saved_coordinates(self, rows:list, page:int = 1):

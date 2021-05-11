@@ -27,11 +27,11 @@ async def get_death_stats():
     query = "select player, count(*) from dead group by player ORDER BY 2 DESC, 1 LIMIT 10;"
     return await postgre.get().fetch(query)
 
-async def insert_landmark(x:int, y:int, z:int, description:str):
+async def insert_landmark(description:str, x:int, y:int, z:int):
     connection = await postgre.get().acquire()
     async with connection.transaction():
-        query = f'INSERT INTO coordinates(x, y, z, description) VALUES($1, $2, $3, $4);'
-        await postgre.get().execute(query, x, y, z, description)
+        query = f'INSERT INTO coordinates(description, x, y, z) VALUES($1, $2, $3, $4);'
+        await postgre.get().execute(query, description, x, y, z)
     await postgre.get().release(connection)
 
 async def update_landmark():
