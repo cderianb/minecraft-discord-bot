@@ -44,25 +44,7 @@ class Minecraft(commands.Cog):
                     embed_message = await self.__get_embed_saved_coordinates(rows, page)
                     await reaction.message.edit(embed=embed_message)
                 return
-    # TODO: delete after all name is migrated
-    @commands.command(name='mc-rename', help='mc-rename [current player name stored] [player\'s discord (use @)]')
-    async def mc_rename(self, ctx, name: str, user: discord.User):
-        await rename_player(name, str(user.id))
-        await ctx.send(f'{name} is now updated to <@{user.id}>')
-    # TODO: delete soon
-    @commands.command(name='envi', help='liat envi nanti dihapus')
-    async def mc_envi(self, ctx):
-        mc_api = os.getenv('MINECRAFT_SERVER_STATS_API')
-        mc_server = os.getenv('MINECRAFT_ATERNOS_SERVER')
-        email = os.getenv('KEHUJANAN_EMAIL')
-        password = os.getenv('KEHUJANAN_PASSWORD')
-        pr = []
-        pr.append(mc_api)
-        pr.append(mc_server)
-        pr.append(email)
-        pr.append(password)
-        await ctx.send('\n'.join(pr))
-    ##########################################################################################################################
+
     @commands.command(name='mc-death', help='mc-death [player (use @)] [day_count] [reason] [yyyy-mm-dd (default current date)]')
     async def mc_death(self, ctx, user: discord.User, day: int, reason: str, _time: str= None):
         await update_player_death(str(user.id), day, reason, _time)
