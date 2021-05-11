@@ -139,7 +139,7 @@ class Minecraft(commands.Cog):
 |     Description    |   X   |   Y   |   Z   |
 +--------------------+-------+-------+-------+\n"""
         for row in rows:
-            message += f'|{(str(row[4])).center(20)}|{(str(row[1])).center(7)}|{(str(row[2])).center(7)}|{str(row[3]).center(7)}|\n'
+            message += f'|{(str(row[1])).center(20)}|{(str(row[2])).center(7)}|{(str(row[3])).center(7)}|{str(row[4]).center(7)}|\n'
         message += '+--------------------+-------+-------+-------+\n'
 
         embed_message.add_field(name="Coordinates", value=f"```{message}```", inline=True)

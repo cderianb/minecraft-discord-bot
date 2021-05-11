@@ -9,7 +9,8 @@ query = [
     description varchar(100),
 	x smallint, 
 	y smallint, 
-	z smallint);"""
+	z smallint,
+    );"""
 ]
 
 async def migrate_db():
