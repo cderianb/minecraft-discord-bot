@@ -45,11 +45,12 @@ async def on_command_error(ctx, error):
 
     #kirim email nya ga async, jadi agak nunggu gitu
     #makanya buat skrg send email nya setelah nulis di err.log dan chat discord biar ga nunggu
+    email_content = f"[{time.asctime()}]\n{err}\n"
     email = os.getenv('KEHUJANAN_EMAIL')
     password = os.getenv('KEHUJANAN_PASSWORD')
     yag = yagmail.SMTP(email, password)
     contents = [
-            err
+            email_content
         ]
     yag.send(email, 'Minecraft Error', contents) 
     
