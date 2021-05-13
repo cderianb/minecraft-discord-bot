@@ -1,6 +1,7 @@
 from imports import *
 from database.provider.PostgreSQL import postgre
 from database.migrations import migrate_db
+from service.Log import *
 
 load_dotenv()
 
@@ -14,13 +15,20 @@ start_time = time.time()
 buffer_time = 10 * 60 # 15 minutes
 exit_after = 24 * 60 * 60 # 24 hours in second
 
+#Global variable
 bot = commands.Bot(command_prefix='!')
+log = None
 
 @bot.event
 async def on_ready():
-    await postgre.connect()
-    await migrate_db()
+    global log
 
+    #Initiate log class
+    channel_dev_id = os.getenv("DEV_CHANNEL_ID", 788725650071879701)
+    log = Log(bot, channel_dev_id)
+
+    await postgre.connect()
+    await migrate_db(log)
     for m in modules:
         bot.load_extension(m)
 
@@ -30,24 +38,22 @@ async def on_ready():
 
 @bot.event
 async def on_command_error(ctx, error):
-    err = f'[{time.asctime()}]\nUnhandled Exception: {error}\n'
-    
-    with open('err.log', 'a') as f:
-        f.write(err)
+    err = f'Unhandled Exception: {error}'
+    await log.error(err)
 
     await ctx.send('☹️ Ooops something happened! Please contact your admin')
 
     #kirim email nya ga async, jadi agak nunggu gitu
     #makanya buat skrg send email nya setelah nulis di err.log dan chat discord biar ga nunggu
+    email_content = f"[{time.asctime()}]\n{err}\n"
     email = os.getenv('KEHUJANAN_EMAIL')
     password = os.getenv('KEHUJANAN_PASSWORD')
     yag = yagmail.SMTP(email, password)
     contents = [
-            err
+            email_content
         ]
     yag.send(email, 'Minecraft Error', contents) 
     
-
 
 #Start bot
 def connectBot(TOKEN_DISCORD):
