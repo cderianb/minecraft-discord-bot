@@ -129,7 +129,7 @@ class Minecraft(commands.Cog):
         await ctx.send(f'**💾 Coordinate for `{" ".join(description)}` at `x: {x} y: {y} z: {z}` is saved**')
     
     @commands.command(name='mc-help', help='use !help')
-    async def mc_death(self, ctx):
+    async def mc_help(self, ctx):
         await ctx.send("Use !help")
 
     async def __get_embed_saved_coordinates(self, rows:list, page:int = 1):
