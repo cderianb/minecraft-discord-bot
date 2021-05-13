@@ -1,3 +1,5 @@
+import os
+
 from database.provider.PostgreSQL import postgre
 
 query = [
@@ -9,11 +11,14 @@ query = [
     description varchar(100),
 	x smallint, 
 	y smallint, 
-	z smallint,
+	z smallint
     );"""
 ]
 
-async def migrate_db():
+async def migrate_db(log):
     for q in query:
-        # Maybe add log?
-        await postgre.get().execute(q)
+        try:
+            await postgre.get().execute(q)
+        except Exception as e:
+            q_log = f"```{q}```"
+            await log.warn(f"Failed to execute query {q_log} due to {e}")
