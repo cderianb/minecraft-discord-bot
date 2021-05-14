@@ -8,7 +8,7 @@ async def rename_player(name: str, id: str):
     await postgre.get().release(connection)
 
 async def update_player_death(id: str, day: int, reason: str, _time: str = None):
-    time = _time if _time != None else "NOW()"
+    time = f"'{_time}'" if _time != None else "NOW()"
     connection = await postgre.get().acquire()
     async with connection.transaction():
         query = f'INSERT INTO dead(player, days, reason, time) VALUES($1, $2, $3, {time});'
