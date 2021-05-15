@@ -45,12 +45,12 @@ class Minecraft(commands.Cog):
                     await reaction.message.edit(embed=embed_message)
                 return
 
-    @commands.command(name='mc-death', help='mc-death [player (use @)] [day_count] [reason] [yyyy-mm-dd (default current date)]')
+    @commands.command(name='death', help='mc-death [player (use @)] [day_count] [reason] [yyyy-mm-dd (default current date)]')
     async def mc_death(self, ctx, user: discord.User, day: int, reason: str, _time: str= None):
         await update_player_death(str(user.id), day, reason, _time)
         await ctx.send(f"<@{user.id}> Lol ⬆️⬆️" if user.id == 289434773972058113 else f"**😈 and <@{user.id}> goes straight to the hell**")
 
-    @commands.command(name='mc-history', help='see current death stats (last 10 death)')
+    @commands.command(name='history', help='see current death stats (last 10 death)')
     async def mc_history(self, ctx):
         try:
             rows = await get_all_player_dead_history(0)
@@ -63,7 +63,7 @@ class Minecraft(commands.Cog):
         except Exception as e:
             print(e)
     
-    @commands.command(name='mc-history-user', help='mc-history-user [player (use @)]')
+    @commands.command(name='history-user', help='mc-history-user [player (use @)]')
     async def mc_history_user(self, ctx, user: discord.User):
         player_name = await self.__get_name_by_id(user.id)
         embed_message = discord.Embed(title=f'{player_name}\'s Death History', description="Death History per Player", color=0x00ff00)
@@ -79,7 +79,7 @@ class Minecraft(commands.Cog):
         embed_message.add_field(name="History", value=f"```{message}```", inline=True)
         await ctx.send(embed=embed_message)
 
-    @commands.command(name='mc-stats', help='see current death stats')
+    @commands.command(name='stats', help='see current death stats')
     async def mc_stats(self, ctx):
         embed_message = discord.Embed(title="Minecraft Hardcore Dead Stats", description="Death Counter", color=0x00ff00)
         
@@ -95,7 +95,7 @@ class Minecraft(commands.Cog):
         embed_message.add_field(name="Stats", value=f"```{message}```", inline=True)
         await ctx.send(embed=embed_message)
 
-    @commands.command(name="mc-server", help='Server Information')
+    @commands.command(name="server", help='Server Information')
     async def mc_server(self, ctx):
         message = await ctx.send('⏳ **Retrieving server info... Please wait...**')
         
@@ -110,7 +110,7 @@ class Minecraft(commands.Cog):
         embed_message = self.__get_embed_server_status(response.json())
         await message.edit(content=None, embed=embed_message)
 
-    @commands.command(name='mc-coord', help='see/save coordinates [x] [y] [z] [description]')
+    @commands.command(name='coord', help='see/save coordinates [x] [y] [z] [description]')
     async def mc_coord(self, ctx, x:int = 300, y:int = 300, z:int = 300, *description:str):
         #coordinate minecraft mentok di 255
         if len(description) == 0 and x == 300 and y == 300 and z == 300:
@@ -127,10 +127,6 @@ class Minecraft(commands.Cog):
 
         await insert_landmark(' '.join(description), x, y, z)
         await ctx.send(f'**💾 Coordinate for `{" ".join(description)}` at `x: {x} y: {y} z: {z}` is saved**')
-    
-    @commands.command(name='mc-help', help='use !help')
-    async def mc_help(self, ctx):
-        await ctx.send("Use !help")
 
     async def __get_embed_saved_coordinates(self, rows:list, page:int = 1):
         embed_message = discord.Embed(
