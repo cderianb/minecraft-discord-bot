@@ -16,7 +16,7 @@ buffer_time = 10 * 60 # 15 minutes
 exit_after = 24 * 60 * 60 # 24 hours in second
 
 #Global variable
-bot = commands.Bot(command_prefix='!')
+bot = commands.Bot(command_prefix='!mc-')
 log = None
 
 @bot.event
@@ -33,7 +33,6 @@ async def on_ready():
         bot.load_extension(m)
 
     print(f'{bot.user.name} has connected to discord')
-
     await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name="Someone Dying"))
 
 @bot.event
