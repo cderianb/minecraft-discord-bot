@@ -8,3 +8,8 @@ async def get_name_by_discord_id(bot: Bot, id: int):
         cachedName[id] = user.name
     
     return cachedName[id]
+
+
+async def add_pagination_arrow_reaction(res):
+    await res.add_reaction('⬅️')
+    await res.add_reaction('➡️')

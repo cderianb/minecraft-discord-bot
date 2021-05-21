@@ -56,3 +56,8 @@ async def delete_landmark():
 async def get_all_coordinates(offset: int, limit: int = 10):
     query = f"SELECT * FROM coordinates ORDER BY id DESC LIMIT {limit} OFFSET {offset};"
     return await postgre.get().fetch(query)
+
+
+async def count_coordinates():
+    query = f"SELECT COUNT(*) AS count from coordinates"
+    return await postgre.get().fetch(query)
