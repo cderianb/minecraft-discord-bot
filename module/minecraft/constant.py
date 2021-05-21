@@ -1,0 +1,8 @@
+PREV = 0
+NEXT = 1
+
+DEATH_HISTORY_TITLE = "Minecraft Hardcore Death History"
+DEATH_HISTORY_ITEM_PER_PAGE = 10
+
+SAVED_COORDINATES_TITLE = "Minecraft Saved Coordinates"
+COORDINATES_ITEM_PER_PAGE = 10
