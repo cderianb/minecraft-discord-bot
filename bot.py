@@ -3,6 +3,8 @@ from database.provider.PostgreSQL import postgre
 from database.migrations import migrate_db
 from service.Log import *
 
+from module.minecraft import register_minecraft_cog
+
 load_dotenv()
 
 # Modules
@@ -29,8 +31,9 @@ async def on_ready():
 
     await postgre.connect()
     await migrate_db(log)
-    for m in modules:
-        bot.load_extension(m)
+    
+    # Register module
+    register_minecraft_cog(bot)
 
     print(f'{bot.user.name} has connected to discord')
     await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name="Someone Dying"))

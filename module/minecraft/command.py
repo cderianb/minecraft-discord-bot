@@ -1,67 +1,40 @@
+from module.minecraft import constant
 import discord
 import requests
 import os
+import math
+import module.minecraft.presenter as presenter
 
 from discord.ext import commands
 from database.provider.PostgreSQL import postgre
 from service.MinecraftService import *
 
-class Minecraft(commands.Cog):
+class MinecraftCommand(commands.Cog, name="Minecraft"):
     def __init__(self, bot):
         self.bot = bot
-        self.DEATH_HISTORY_TITLE = "Minecraft Hardcore Death History"
-        self.SAVED_COORDINATES_TITLE = "Minecraft Saved Coordinates"
-    
-    @commands.Cog.listener()
-    async def on_reaction_add(self, reaction, user):
-        if user.bot:
-            return
-
-        if len(reaction.message.embeds) > 0:
-            embed = reaction.message.embeds[0]
-            page = int(embed.footer.text)
-            offset = 0
-            limit = 10
-            # kasih validasi kalo yang boleh next cuma yang nge request
-            if(reaction.emoji == '➡️'):
-                offset = page * limit
-                page+=1
-
-            elif(reaction.emoji == '⬅️' and page > 1 ):
-                page-=1
-                offset = (page-1) * limit
-
-            if(embed.title == self.DEATH_HISTORY_TITLE):
-                rows = await get_all_player_dead_history(offset, limit)
-                if len(rows) > 0:
-                    embed_message = await self.__get_embed_death_history(rows, page)
-                    await reaction.message.edit(embed=embed_message)
-                return
-
-            elif(embed.title == self.SAVED_COORDINATES_TITLE):
-                rows = await get_all_coordinates(offset, limit)
-                if len(rows) > 0:
-                    embed_message = await self.__get_embed_saved_coordinates(rows, page)
-                    await reaction.message.edit(embed=embed_message)
-                return
 
     @commands.command(name='death', help='mc-death [player (use @)] [day_count] [reason] [yyyy-mm-dd (default current date)]')
     async def mc_death(self, ctx, user: discord.User, day: int, reason: str, _time: str= None):
         await update_player_death(str(user.id), day, reason, _time)
-        await ctx.send(f"<@{user.id}> Lol ⬆️⬆️" if user.id == 289434773972058113 else f"**😈 and <@{user.id}> goes straight to the hell**")
+        await ctx.send(presenter.get_death_message(user.id))
 
     @commands.command(name='history', help='see current death stats (last 10 death)')
     async def mc_history(self, ctx):
         try:
-            rows = await get_all_player_dead_history(0)
-            embed_message = await self.__get_embed_death_history(rows)
+            limit = constant.DEATH_HISTORY_ITEM_PER_PAGE
+            rows = await get_all_player_dead_history(0, limit)
+            totalData = await count_all_player_dead_history()
+            totalPage = int(math.ceil(totalData[0]['count'] / limit))
+            embed_message = await presenter.get_embed_death_history(self.bot, rows, 1, totalPage)
 
             res = await ctx.send(embed=embed_message)
             await res.add_reaction('⬅️')
             await res.add_reaction('➡️')
 
         except Exception as e:
+            print("throwing exception")
             print(e)
+            # pass
     
     @commands.command(name='history-user', help='mc-history-user [player (use @)]')
     async def mc_history_user(self, ctx, user: discord.User):
@@ -128,44 +101,6 @@ class Minecraft(commands.Cog):
         await insert_landmark(' '.join(description), x, y, z)
         await ctx.send(f'**💾 Coordinate for `{" ".join(description)}` at `x: {x} y: {y} z: {z}` is saved**')
 
-    async def __get_embed_saved_coordinates(self, rows:list, page:int = 1):
-        embed_message = discord.Embed(
-                title="Minecraft Saved Coordinates", 
-                description="Minecraft saved coordinates for landmarks and others", 
-                color=0x00ff00
-            )
-        message = """
-+--------------------+-------+-------+-------+
-|     Description    |   X   |   Y   |   Z   |
-+--------------------+-------+-------+-------+\n"""
-        for row in rows:
-            message += f'|{(str(row[1])).center(20)}|{(str(row[2])).center(7)}|{(str(row[3])).center(7)}|{str(row[4]).center(7)}|\n'
-        message += '+--------------------+-------+-------+-------+\n'
-
-        embed_message.add_field(name="Coordinates", value=f"```{message}```", inline=True)
-        embed_message.set_footer(text=str(page))
-        return embed_message
-
-    async def __get_embed_death_history(self, rows:list, page:int = 1):
-        embed_message = discord.Embed(
-            title=self.DEATH_HISTORY_TITLE, 
-            description="Death history sorted from latest death", 
-            color=0x00ff00
-        )
-
-        message = """
-+--------------+--------------+--------------+--------------+
-|    Player    |     Days     |    Reason    |    TIME      |
-+--------------+--------------+--------------+--------------+\n"""
-        for row in rows:
-            name = await self.__get_name_by_id(row[1])
-            message += f'|{name.center(14)}|{(str(row[2])).center(14)}|{row[3].center(14)}|{str(row[4]).center(14)}|\n'
-        message += '+--------------+--------------+--------------+--------------+\n'
-
-        embed_message.add_field(name="History", value=f"```{message}```", inline=True)
-        embed_message.set_footer(text=str(page))
-        return embed_message
-
     async def __get_name_by_id(self, id):
         user = await self.bot.fetch_user(id)
         return user.name
@@ -187,5 +122,3 @@ class Minecraft(commands.Cog):
         
         return embed_message
         
-def setup(bot):
-    bot.add_cog(Minecraft(bot))
