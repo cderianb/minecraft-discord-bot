@@ -25,7 +25,6 @@ async def get_embed_death_history(bot, rows:list, page:int, totalPage:int):
         name = await helper.get_name_by_discord_id(bot, row['player'])
         message += f'|{name.center(14)}|{(str(row["days"])).center(14)}|{row["reason"].center(14)}|{str(row["time"]).center(14)}|\n'
     message += '+--------------+--------------+--------------+--------------+\n'
-    print(message)
 
     embed_message.add_field(name="History", value=f"```{message}```", inline=True)
     embed_message.set_footer(text=f'Page: {page}/{totalPage}')

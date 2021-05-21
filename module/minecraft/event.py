@@ -25,12 +25,9 @@ class MinecraftEvent(commands.Cog):
 
         if(reaction.emoji == '➡️' and currentPage < totalPage):
             action = constant.NEXT
-            print(action)
         elif(reaction.emoji == '⬅️' and currentPage > 1):
             action = constant.PREV
-            print(action)
         else:
-            print(action)
             return
 
         content = None
@@ -39,7 +36,6 @@ class MinecraftEvent(commands.Cog):
         elif title == constant.SAVED_COORDINATES_TITLE:
             content = await self.__update_saved_coordinates_page(currentPage, totalPage, action)
 
-        print(content)
         if (content != None):
             await reaction.message.edit(embed = content)
     
