@@ -25,6 +25,7 @@ def initApp():
     discord_bot.run(config.DISCORD_TOKEN)
     
 
+# TODO: delete later
 if __name__ == '__main__':
     p = multiprocessing.Process(target=initApp, name="initApp")
     p.start()
