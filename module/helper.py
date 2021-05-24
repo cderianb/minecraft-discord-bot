@@ -1,3 +1,5 @@
+import asyncio
+
 from discord.ext.commands import Bot
 
 cachedName = {}
@@ -11,5 +13,7 @@ async def get_name_by_discord_id(bot: Bot, id: int):
 
 
 async def add_pagination_arrow_reaction(res):
-    await res.add_reaction('⬅️')
-    await res.add_reaction('➡️')
+    await asyncio.gather(
+        res.add_reaction('⬅️'),
+        res.add_reaction('➡️')
+    )
