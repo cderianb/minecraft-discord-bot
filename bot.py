@@ -15,7 +15,7 @@ buffer_time = 10 * 60 # 15 minutes
 exit_after = 24 * 60 * 60 # 24 hours in second
 
 def initApp():
-    # Start logger service
+    # Initiate logger service
     Log(discord_bot)
 
     # Migrate database

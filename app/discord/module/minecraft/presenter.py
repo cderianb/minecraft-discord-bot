@@ -15,8 +15,7 @@ async def get_embed_death_history(bot, rows:list, page:int, totalPage:int):
         color=0x00ff00
     )
 
-    message = textwrap.dedent(
-        """
+    message = textwrap.dedent("""
         +--------------+--------------+--------------+--------------+
         |    Player    |     Days     |    Reason    |    TIME      |
         +--------------+--------------+--------------+--------------+\n"""

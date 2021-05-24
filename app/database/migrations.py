@@ -6,11 +6,11 @@ query = [
     "SET timezone TO 'Asia/Jakarta';",
     "ALTER TABLE dead ADD COLUMN IF NOT EXISTS time date;",
     """CREATE TABLE IF NOT EXISTS coordinates(
-    id SERIAL PRIMARY KEY, 
-    description varchar(100),
-    x smallint, 
-    y smallint, 
-    z smallint
+        id SERIAL PRIMARY KEY, 
+        description varchar(100),
+        x smallint, 
+        y smallint, 
+        z smallint
     );"""
 ]
 
