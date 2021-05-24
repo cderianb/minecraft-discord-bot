@@ -1,70 +1,32 @@
-from imports import *
-from database.provider.PostgreSQL import postgre
-from database.migrations import migrate_db
-from service.Log import *
+import asyncio
+import config
+import multiprocessing
+import sys
+import time
 
-from module.minecraft import register_minecraft_cog
+from app.database.migrations import migrate_db
+from app.discord import discord_bot
+from app.service.Log import Log
 
-load_dotenv()
-
-# Modules
-modules = [
-    "module.Minecraft"
-]
 
 #TIMER
 start_time = time.time()
 buffer_time = 10 * 60 # 15 minutes
 exit_after = 24 * 60 * 60 # 24 hours in second
 
-#Global variable
-bot = commands.Bot(command_prefix='!mc-')
-log = None
+def initApp():
+    # Start logger service
+    Log(discord_bot)
 
-@bot.event
-async def on_ready():
-    global log
+    # Migrate database
+    asyncio.run(migrate_db())
 
-    #Initiate log class
-    channel_dev_id = os.getenv("DEV_CHANNEL_ID", 788725650071879701)
-    log = Log(bot, channel_dev_id)
-
-    await postgre.connect()
-    await migrate_db(log)
+    # Start discord bot
+    discord_bot.run(config.DISCORD_TOKEN)
     
-    # Register module
-    register_minecraft_cog(bot)
-
-    print(f'{bot.user.name} has connected to discord')
-    await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name="Someone Dying"))
-
-@bot.event
-async def on_command_error(ctx, error):
-    err = f'Unhandled Exception: {error}'
-    await log.error(err)
-
-    await ctx.send('☹️ Ooops something happened! Please contact your admin')
-
-    #kirim email nya ga async, jadi agak nunggu gitu
-    #makanya buat skrg send email nya setelah nulis di err.log dan chat discord biar ga nunggu
-    email_content = f"[{time.asctime()}]\n{err}\n"
-    email = os.getenv('KEHUJANAN_EMAIL')
-    password = os.getenv('KEHUJANAN_PASSWORD')
-    yag = yagmail.SMTP(email, password)
-    contents = [
-            email_content
-        ]
-    yag.send(email, 'Minecraft Error', contents) 
-    
-
-#Start bot
-def connectBot(TOKEN_DISCORD):
-    bot.run(TOKEN_DISCORD)
 
 if __name__ == '__main__':
-    #Bot Credential
-    TOKEN = os.getenv('DISCORD_TOKEN') 
-    p = multiprocessing.Process(target=connectBot, name="connectBot", args=(TOKEN,))
+    p = multiprocessing.Process(target=initApp, name="initApp")
     p.start()
 
     #Timer
