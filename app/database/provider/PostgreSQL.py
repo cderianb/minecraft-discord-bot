@@ -1,7 +1,8 @@
 import os
 import asyncpg
+from app.core.Singleton import Singleton
 
-class PostgreSQL:
+class PostgreSQL(metaclass=Singleton):
     def __init__(self):
         self.db = None
 

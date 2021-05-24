@@ -1,0 +1,17 @@
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+DEV_CHANNEL_ID = os.getenv("DEV_CHANNEL_ID", "788725650071879701")
+DEBUG_EMAIL = os.getenv('KEHUJANAN_EMAIL', "")
+DEBUG_EMAIL_PASSWORD = os.getenv('KEHUJANAN_PASSWORD', "")
+DISCORD_TOKEN = os.getenv('DISCORD_TOKEN', "")
+
+POSTGRES_USER = os.getenv('POSTGRES_USER', ""),
+POSTGRES_PASSWORD = os.getenv('POSTGRES_PASSWORD', ""), 
+POSTGRES_DB = os.getenv('POSTGRES_DATABASE', ""),
+POSTGRES_HOST = os.getenv('POSTGRES_HOST', "")
+
+MINECRAFT_STATS_API = os.getenv('MINECRAFT_SERVER_STATS_API', "")
+MINECRAFT_SERVER = os.getenv('MINECRAFT_ATERNOS_SERVER', "")

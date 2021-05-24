@@ -1,8 +1,11 @@
+import config
 import time
 
-class Log():
-    def __init__(self, bot, channel_id):
-        self.channel = bot.get_channel(channel_id)
+from app.core.Singleton import Singleton
+
+class Log(metaclass=Singleton):
+    def __init__(self, bot):
+        self.channel = bot.get_channel(config.DEV_CHANNEL_ID)
 
     async def warn(self, msg):
         warn_msg = f"[WARN] [{time.asctime()}] {msg}"
@@ -19,12 +22,9 @@ class Log():
         await self.__send_to_channel(error_msg)
 
     async def __send_to_channel(self, msg):
-        await self.channel.send(msg)
+        # await self.channel.send(msg)
+        pass
     
     def __print_to_log_file(self, msg):
         with open('err.log', 'a') as f:
             f.write(f"{msg}\n")
-
-
-
-    

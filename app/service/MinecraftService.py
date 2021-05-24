@@ -1,4 +1,4 @@
-from database.provider.PostgreSQL import postgre
+from app.database.provider.PostgreSQL import postgre
 
 async def rename_player(name: str, id: str):
     connection = await postgre.get().acquire()
@@ -6,6 +6,7 @@ async def rename_player(name: str, id: str):
         query = f'UPDATE dead SET player=$1 WHERE player=$2;'
         await postgre.get().execute(query, id, name)
     await postgre.get().release(connection)
+
 
 async def update_player_death(id: str, day: int, reason: str, _time: str = None):
     time = f"'{_time}'" if _time != None else "NOW()"
@@ -15,17 +16,26 @@ async def update_player_death(id: str, day: int, reason: str, _time: str = None)
         await postgre.get().execute(query, id, day, reason)
     await postgre.get().release(connection)
 
+
 async def get_all_player_dead_history(offset: int, limit: int = 10):
     query = f"SELECT * FROM dead ORDER BY id DESC LIMIT {limit} OFFSET {offset};"
     return await postgre.get().fetch(query)
+
+
+async def count_all_player_dead_history():
+    query = f"SELECT COUNT(*) AS count from dead"
+    return await postgre.get().fetch(query)
+
 
 async def get_player_dead_history(id: int, offset: int, limit = 10):
     query = f"SELECT days, reason, time FROM dead WHERE player = '{id}' ORDER BY id DESC LIMIT {limit} OFFSET {offset};"
     return await postgre.get().fetch(query)
 
+
 async def get_death_stats():
     query = "select player, count(*) from dead group by player ORDER BY 2 DESC, 1 LIMIT 10;"
     return await postgre.get().fetch(query)
+
 
 async def insert_landmark(description:str, x:int, y:int, z:int):
     connection = await postgre.get().acquire()
@@ -34,12 +44,20 @@ async def insert_landmark(description:str, x:int, y:int, z:int):
         await postgre.get().execute(query, description, x, y, z)
     await postgre.get().release(connection)
 
+
 async def update_landmark():
     return NotImplementedError()
+
 
 async def delete_landmark():
     return NotImplementedError()
 
+
 async def get_all_coordinates(offset: int, limit: int = 10):
     query = f"SELECT * FROM coordinates ORDER BY id DESC LIMIT {limit} OFFSET {offset};"
+    return await postgre.get().fetch(query)
+
+
+async def count_coordinates():
+    query = f"SELECT COUNT(*) AS count from coordinates"
     return await postgre.get().fetch(query)
