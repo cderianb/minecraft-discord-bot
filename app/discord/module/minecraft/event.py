@@ -1,7 +1,7 @@
 import re
-import module.minecraft.constant as constant
-import module.minecraft.presenter as presenter
-import service.MinecraftService as service
+import app.discord.module.minecraft.constant as constant
+import app.discord.module.minecraft.presenter as presenter
+import app.service.MinecraftService as service
 
 from discord.ext import commands
 

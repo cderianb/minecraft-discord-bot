@@ -1,4 +1,4 @@
-from database.provider.PostgreSQL import postgre
+from app.database.provider.PostgreSQL import postgre
 
 async def rename_player(name: str, id: str):
     connection = await postgre.get().acquire()

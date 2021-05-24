@@ -1,7 +1,7 @@
 import discord
 import textwrap
-import module.minecraft.constant as constant
-import module.helper as helper
+import app.discord.module.minecraft.constant as constant
+import app.discord.module.helper as helper
 
 
 def get_death_message(userId: int):

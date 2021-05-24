@@ -1,11 +1,11 @@
 import discord
-import requests
-import os
 import math
-import module.minecraft.constant as constant
-import module.helper as helper
-import module.minecraft.presenter as presenter
-import service.MinecraftService as service
+import os
+import requests
+import app.discord.module.minecraft.constant as constant
+import app.discord.module.helper as helper
+import app.discord.module.minecraft.presenter as presenter
+import app.service.MinecraftService as service
 
 from discord.ext import commands
 

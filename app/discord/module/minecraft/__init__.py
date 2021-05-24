@@ -1,6 +1,6 @@
 from discord.ext.commands import Bot
-from module.minecraft.command import MinecraftCommand
-from module.minecraft.event import MinecraftEvent
+from app.discord.module.minecraft.command import MinecraftCommand
+from app.discord.module.minecraft.event import MinecraftEvent
 
 def register_minecraft_cog(bot: Bot):
     try:
