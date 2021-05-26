@@ -11,6 +11,9 @@ remote_commit_id=`git rev-parse origin/main`
 # Check latest deployment commit hash
 latest_commit_id=`git rev-parse HEAD`
 
+# Pull latest commit from origin
+git fetch origin
+
 # Pull latest commit if there is any new commit
 if [ "$remote_commit_id" != "$latest_commit_id" ]; then
     git checkout $remote_commit_id
@@ -19,7 +22,7 @@ if [ "$remote_commit_id" != "$latest_commit_id" ]; then
     pip install -r requirements.txt
 fi
 
-# Check if there is a running instance
+# Check if there is any running instance
 if test -f "$PID_FILE"; then
     kill -9 `cat $PID_FILE`
 fi
