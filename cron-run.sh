@@ -27,5 +27,5 @@ if test -f "$PID_FILE"; then
     kill -9 `cat $PID_FILE`
 fi
 
-nohup python bot.py &
+nohup python bot.py &>/dev/null &
 echo $! > $PID_FILE
